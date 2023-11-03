@@ -2,6 +2,7 @@ import express from "express";
 import * as tweetController from '../controller/tweet.js';
 import { body } from 'express-validator';
 import { validate } from "../middleware/validator.js";
+import * as authController from "../controller/tweet.js";
 
 // 라우터 객체 생성
 const router = express.Router();
@@ -78,6 +79,5 @@ router.delete('/:id', tweetController.deleteTweet);
 //     tweets = tweets.filter((tweet) => tweet.id !== id);
 //     res.sendStatus(204);
 // }
-
 
 export default router;
