@@ -3,6 +3,7 @@ import * as tweetController from '../controller/tweet.js';
 import { body } from 'express-validator';
 import { validate } from "../middleware/validator.js";
 import * as authController from "../controller/tweet.js";
+import { isAuth } from "../middleware/auth.js";
 
 // 라우터 객체 생성
 const router = express.Router();
@@ -18,66 +19,26 @@ const validateTweet = [
 // GET / tweets 
 // GET / tweets?username=:username
 
-router.get('/', tweetController.getTweets);
-// (req, res, next) => {
-//     const username = req.query.username;
-//     const data = username 
-//         ? tweets.filter((tweet) => tweet.username === username)
-//         : tweets;
-//     res.status(200).json(data)
-// }
+router.get('/', isAuth, tweetController.getTweets);
 
 
 // GET / tweets/:id
-router.get('/:id', tweetController.getTweet);
-// (req, res, next) => {
-//     const id = req.params.id;
-//     const tweet = tweets.find((tweet) => tweet.id === id);
-//     if(tweet){
-//         res.status(200).json(tweet);
-//     } else {
-//         res.status(404).json({message: `Tweet id(${id}) not found`})
-//     }
-//  }
+router.get('/:id', isAuth, tweetController.getTweet);
+
 
 
 // POST / tweets
-router.post('/', validateTweet, tweetController.createTweet);
-// (req, res, next) => {
-//     const { text, name, username } = req.body;
-//     const tweet = {
-//         id: '10',
-//         text,
-//         createdAt: Date.now().toString(),
-//         name,
-//         username
-//     };
-//     tweets = [tweet, ...tweets];
-//     res.status(201).json(tweet);
-// }
+router.post('/', isAuth, validateTweet, tweetController.createTweet);
+
 
 
 // PUT / tweets/:id
-router.put('/:id', validateTweet, tweetController.updateTweet);
-// (req, res, next) => {
-//     const id = req.params.id;
-//     const text = req.body.text;
-//     const tweet = tweets.find((tweet) => tweet.id === id);
-//     if(tweet){
-//         tweet.text = text;
-//         res.status(200).json(tweet);
-//     } else {
-//         res.status(404).json({message: `Tweet id(${id}) not found`})
-//     }
-// }
+router.put('/:id', isAuth, validateTweet, tweetController.updateTweet);
+
 
 
 // DELETE  / tweets/:id
-router.delete('/:id', tweetController.deleteTweet);
-// (req, res, next) => {
-//     const id = req.params.id;
-//     tweets = tweets.filter((tweet) => tweet.id !== id);
-//     res.sendStatus(204);
-// }
+router.delete('/:id', isAuth, tweetController.deleteTweet);
+
 
 export default router;

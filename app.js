@@ -10,7 +10,7 @@ app.use(morgan("dev"));
 
 // 라우터
 app.use('/tweets', tweetsRouter);
-app.use('/users', authRouter);
+app.use('/auth', authRouter);
 
 
 
