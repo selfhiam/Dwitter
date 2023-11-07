@@ -2,7 +2,6 @@ import express from "express";
 import * as tweetController from '../controller/tweet.js';
 import { body } from 'express-validator';
 import { validate } from "../middleware/validator.js";
-import * as authController from "../controller/tweet.js";
 import { isAuth } from "../middleware/auth.js";
 
 // 라우터 객체 생성
