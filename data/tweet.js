@@ -1,34 +1,67 @@
-import { db } from "../db/database.js";
+import MongoDB from 'mongodb';
+import { getTweets } from "../db/database.js";
+import * as UserRepository from './auth.js';
 
-const SELECT_JOIN = 'select tw.id, tw.text, tw.createdAt, tw.userId, us.username, us.name, us.email, us.url from tweets as tw JOIN users as us ON tw.userId = us.id';
-
-const ORDER_DESC = 'ORDER BY tw.createdAt DESC';
+const ObjectID = MongoDB.ObjectId;
 
 export async function getAll(){
-    return db.execute(`${SELECT_JOIN} ${ORDER_DESC}`)
-    .then((result) => result[0]);
+    return getTweets()
+        .find()
+        .sort({ createdAt: -1 })
+        // -1은 내림차순
+        .toArray()
+        .then(mapTweets);
 }
 
 export async function getAllByUsername(username){
-    return db.execute(`${SELECT_JOIN} WHERE username=? ${ORDER_DESC}`, [username])
-    .then((result) => result[0]);
+    return getTweets()
+    .find({ username })
+    .sort({ createdAt: -1 })
+    .toArray()
+    .then(mapTweets);
 }
 
 export async function getById(id){
-    return db.execute(`${SELECT_JOIN} WHERE tw.id=?`, [id])
-    .then((result) => result[0][0]);
+    return getTweets()
+    .find({ _id: new ObjectID(id) })
+    .next() // 찾았다면
+    .then(mapOptionalTweet);
 }
 
 export async function create(text, userId){
-    return db.execute('INSERT INTO tweets (text, createdAt, userId) VALUES (?, ?, ?)', [text, new Date(), userId])
-    .then((result) => getById(result[0].insertId));
+    return UserRepository.findById(userId)
+    .then((user) => {
+        return getTweets().insertOne({
+            text,
+            createdAt: new Date(),
+            userId,
+            name: user.name,
+            username: user.username,
+            url: user.url
+        })
+    })
+    .then((result) => getById(result.insertedId))
+    .then(mapOptionalTweet);
 }
 
 export async function update(id, text){
-    return db.execute('UPDATE tweets SET text=? WHERE id=?', [text, id])
-    .then(() => getById(id));
+    return getTweets().findOneAndUpdate(
+        { _id: new ObjectID(id) },
+        { $set: {text}},
+        {returnDocument: "after"}
+    )
+    .then((result) => result)
+    .then(mapOptionalTweet)
 }
 
 export async function remove(id){
-    return db.execute('DELETE FROM tweets WHERE id=?', [id]);
+    return getTweets().deleteOne({ _id: new ObjectID(id) })
+}
+
+function mapOptionalTweet(tweet){
+    return tweet ? { ...tweet, id: tweet.insertedId } : tweet;
+}
+
+function mapTweets(tweets){
+    return tweets.map(mapOptionalTweet);
 }
